@@ -603,41 +603,14 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(
   </div>
 
   <div class="max-w-4xl mx-auto space-y-4" id="pyramid">
-    <!-- Pirámide: cima estrecha arriba (Nivel 5), base ancha abajo (Nivel 0) -->
-    <div class="step" data-step="5" style="max-width: 50%;">
+    <!-- Pirámide invertida: empieza ancho (Nivel 0) y se concentra hasta el punto (Nivel 5) -->
+    <div class="step" data-step="0" style="max-width: 100%; opacity:0.45;">
       <div class="flex justify-between items-center">
         <div>
-          <div class="text-xs font-bold text-pink-400 tracking-widest">NIVEL 5 · DUEÑO DEL ECOSISTEMA</div>
-          <div class="text-xl font-bold mt-1">Orquesta su propio sistema IA y replica al equipo</div>
+          <div class="text-xs font-bold text-cyan-100/60 tracking-widest">NIVEL 0 · OBSERVADOR · Punto de partida histórico</div>
+          <div class="text-sm mt-1">Conoce que la IA existe pero no la integra</div>
         </div>
-        <div class="hidden md:block text-3xl">👑</div>
-      </div>
-    </div>
-    <div class="step" data-step="4" style="max-width: 62%;">
-      <div class="flex justify-between items-center">
-        <div>
-          <div class="text-xs font-bold text-orange-400 tracking-widest">NIVEL 4 · INTEGRADOR</div>
-          <div class="text-xl font-bold mt-1">Conecta IA con sus herramientas reales (CRM, Drive, correo)</div>
-        </div>
-        <div class="hidden md:block text-3xl">🔗</div>
-      </div>
-    </div>
-    <div class="step" data-step="3" style="max-width: 74%;">
-      <div class="flex justify-between items-center">
-        <div>
-          <div class="text-xs font-bold text-purple-400 tracking-widest">NIVEL 3 · CONSTRUCTOR</div>
-          <div class="text-xl font-bold mt-1">Crea SU app/dashboard a la medida y lo despliega</div>
-        </div>
-        <div class="hidden md:block text-3xl">🛠️</div>
-      </div>
-    </div>
-    <div class="step active" data-step="2" style="max-width: 84%;">
-      <div class="flex justify-between items-center">
-        <div>
-          <div class="text-xs font-bold text-cyan-300 tracking-widest">NIVEL 2 · ARQUITECTO PERSONAL ← PARTE 2 ARRANCA AQUÍ</div>
-          <div class="text-xl font-bold mt-1">Diseña su agente con memoria, skills y voz propia</div>
-        </div>
-        <div class="hidden md:block text-3xl">🧠</div>
+        <div class="hidden md:block text-2xl opacity-60">👀</div>
       </div>
     </div>
     <div class="step" data-step="1" style="max-width: 92%; opacity:0.7;">
@@ -649,13 +622,40 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(
         <div class="hidden md:block text-3xl">✓</div>
       </div>
     </div>
-    <div class="step" data-step="0" style="max-width: 100%; opacity:0.45;">
+    <div class="step active" data-step="2" style="max-width: 84%;">
       <div class="flex justify-between items-center">
         <div>
-          <div class="text-xs font-bold text-cyan-100/60 tracking-widest">NIVEL 0 · OBSERVADOR · Punto de partida histórico</div>
-          <div class="text-sm mt-1">Conoce que la IA existe pero no la integra</div>
+          <div class="text-xs font-bold text-cyan-300 tracking-widest">NIVEL 2 · ARQUITECTO PERSONAL ← PARTE 2 ARRANCA AQUÍ</div>
+          <div class="text-xl font-bold mt-1">Diseña su agente con memoria, skills y voz propia</div>
         </div>
-        <div class="hidden md:block text-2xl opacity-60">👀</div>
+        <div class="hidden md:block text-3xl">🧠</div>
+      </div>
+    </div>
+    <div class="step" data-step="3" style="max-width: 74%;">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-purple-400 tracking-widest">NIVEL 3 · CONSTRUCTOR</div>
+          <div class="text-xl font-bold mt-1">Crea SU app/dashboard a la medida y lo despliega</div>
+        </div>
+        <div class="hidden md:block text-3xl">🛠️</div>
+      </div>
+    </div>
+    <div class="step" data-step="4" style="max-width: 62%;">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-orange-400 tracking-widest">NIVEL 4 · INTEGRADOR</div>
+          <div class="text-xl font-bold mt-1">Conecta IA con sus herramientas reales (CRM, Drive, correo)</div>
+        </div>
+        <div class="hidden md:block text-3xl">🔗</div>
+      </div>
+    </div>
+    <div class="step" data-step="5" style="max-width: 50%;">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-pink-400 tracking-widest">NIVEL 5 · DUEÑO DEL ECOSISTEMA</div>
+          <div class="text-xl font-bold mt-1">Orquesta su propio sistema IA y replica al equipo</div>
+        </div>
+        <div class="hidden md:block text-3xl">👑</div>
       </div>
     </div>
   </div>
@@ -1246,8 +1246,8 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(
           <!-- Valor -->
           <div class="text-center md:text-left">
             <div class="pill pill-cyan mb-5">PROPUESTA PARTE 2 · DIPLOMADO LA ESCALA</div>
-            <div class="text-7xl md:text-8xl font-black leading-none mb-2" style="background:linear-gradient(135deg,#00d4ff,#7b2fff 50%,#ff2e9a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">$10.5M</div>
-            <div class="text-2xl font-bold text-cyan-200 mb-2">COP</div>
+            <div class="text-5xl md:text-6xl font-black leading-none mb-2" style="background:linear-gradient(135deg,#00d4ff,#7b2fff 50%,#ff2e9a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">$10.5M</div>
+            <div class="text-xl font-bold text-cyan-200 mb-2">COP</div>
             <div class="text-sm text-cyan-100/60 mb-1">Diez millones quinientos mil pesos colombianos</div>
             <div class="text-xs text-cyan-100/40">IVA no incluido · Pagos por hitos del programa</div>
 
