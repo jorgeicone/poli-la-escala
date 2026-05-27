@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IA del día día POLI · La Escala — Propuesta Parte 2</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #050d1f;
+    --bg-mid: #0a1834;
+    --cyan: #00d4ff;
+    --purple: #7b2fff;
+    --pink: #ff2e9a;
+    --orange: #ff8c00;
+    --green: #00ffa3;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg-deep);
+    color: #e6edf7;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+    margin: 0;
+  }
+  h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
+
+  /* Animated particle background */
+  #stars {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    z-index: 0; pointer-events:none;
+  }
+
+  .glow-cyan { box-shadow: 0 0 40px rgba(0,212,255,0.35), 0 0 80px rgba(0,212,255,0.15); }
+  .glow-purple { box-shadow: 0 0 40px rgba(123,47,255,0.35), 0 0 80px rgba(123,47,255,0.15); }
+  .glow-pink { box-shadow: 0 0 40px rgba(255,46,154,0.35); }
+
+  .text-grad-cyan {
+    background: linear-gradient(135deg, #00d4ff 0%, #7b2fff 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .text-grad-fire {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff2e9a 50%, #7b2fff 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .text-grad-green {
+    background: linear-gradient(135deg, #00ffa3 0%, #00d4ff 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .card {
+    background: linear-gradient(180deg, rgba(123,47,255,0.06) 0%, rgba(0,212,255,0.03) 100%);
+    border: 1px solid rgba(123,47,255,0.18);
+    border-radius: 18px;
+    backdrop-filter: blur(8px);
+    transition: all .3s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,212,255,0.5);
+    box-shadow: 0 12px 40px rgba(0,212,255,0.18);
+  }
+  .card-strong {
+    background: linear-gradient(180deg, rgba(123,47,255,0.18) 0%, rgba(0,212,255,0.10) 100%);
+    border: 1px solid rgba(0,212,255,0.45);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #00d4ff 0%, #7b2fff 100%);
+    color: #050d1f;
+    font-weight: 700;
+    padding: 14px 28px;
+    border-radius: 999px;
+    transition: all .25s ease;
+    display: inline-flex; align-items:center; gap:10px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,212,255,0.4); }
+  .btn-ghost {
+    border: 1px solid rgba(0,212,255,0.4);
+    color: #e6edf7;
+    padding: 14px 28px;
+    border-radius: 999px;
+    transition: all .25s ease;
+  }
+  .btn-ghost:hover { background: rgba(0,212,255,0.1); border-color: #00d4ff; }
+
+  /* Pyramid */
+  .step {
+    position: relative;
+    margin: 0 auto;
+    padding: 22px 32px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(123,47,255,0.18), rgba(0,212,255,0.08));
+    border: 1px solid rgba(0,212,255,0.3);
+    cursor: pointer;
+    transition: all .3s;
+  }
+  .step:hover { transform: scale(1.02); border-color: #00d4ff; box-shadow: 0 0 35px rgba(0,212,255,0.3); }
+  .step.active { border-color: #ff2e9a; background: linear-gradient(135deg, rgba(255,46,154,0.25), rgba(255,140,0,0.15)); box-shadow: 0 0 40px rgba(255,46,154,0.4); }
+
+  /* Tabs */
+  .tab-btn { padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(123,47,255,0.3); cursor:pointer; transition: all .2s; font-weight:600; font-size:14px;}
+  .tab-btn:hover { border-color: #00d4ff; }
+  .tab-btn.active { background: linear-gradient(135deg, #00d4ff, #7b2fff); color:#050d1f; border-color: transparent; }
+
+  /* Person card */
+  .person {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border: 1px solid rgba(123,47,255,0.2);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all .25s;
+  }
+  .person:hover {
+    border-color: var(--cyan);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,212,255,0.18);
+  }
+  .person.mercadeo { border-left: 4px solid var(--cyan); }
+  .person.matriculas { border-left: 4px solid var(--orange); }
+
+  .pill {
+    display:inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .pill-cyan { background: rgba(0,212,255,0.15); color:#7be7ff; border:1px solid rgba(0,212,255,0.3); }
+  .pill-orange { background: rgba(255,140,0,0.15); color:#ffb869; border:1px solid rgba(255,140,0,0.3); }
+  .pill-purple { background: rgba(123,47,255,0.18); color:#b58cff; border:1px solid rgba(123,47,255,0.35); }
+  .pill-pink { background: rgba(255,46,154,0.15); color:#ff8fbf; border:1px solid rgba(255,46,154,0.3); }
+  .pill-green { background: rgba(0,255,163,0.12); color:#7affd0; border:1px solid rgba(0,255,163,0.3); }
+
+  /* Slider */
+  input[type=range] { -webkit-appearance:none; height: 6px; background: linear-gradient(90deg,#7b2fff,#00d4ff); border-radius:99px; outline:none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; background: #00d4ff; border-radius:50%; cursor:pointer; box-shadow:0 0 12px #00d4ff;}
+  input[type=range]::-moz-range-thumb { width:22px; height:22px; background: #00d4ff; border-radius:50%; cursor:pointer; box-shadow:0 0 12px #00d4ff;}
+
+  .nav-link { transition: color .2s; }
+  .nav-link:hover { color: #00d4ff; }
+
+  /* Floating chips */
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .floaty { animation: floaty 4s ease-in-out infinite; }
+
+  .section-label {
+    display:inline-flex; align-items:center; gap:8px;
+    color: #7be7ff; font-weight:600; font-size: 13px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    border: 1px solid rgba(0,212,255,0.3); padding:6px 14px; border-radius: 999px;
+    background: rgba(0,212,255,0.06);
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(0,212,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* Tier card */
+  .tier { transition: all .3s; }
+  .tier-featured { border: 2px solid; border-image: linear-gradient(135deg,#00d4ff,#7b2fff) 1; transform: scale(1.05); }
+  .tier:hover { transform: translateY(-6px); }
+
+  details > summary { list-style:none; cursor:pointer; }
+  details > summary::-webkit-details-marker { display:none; }
+  details[open] .chev { transform: rotate(180deg); }
+  .chev { transition: transform .2s; }
+
+  .progress-line {
+    position:absolute; left:24px; top:0; bottom:0; width:2px;
+    background: linear-gradient(180deg, #00d4ff 0%, #7b2fff 50%, #ff2e9a 100%);
+    opacity:0.3;
+  }
+
+  @media (max-width: 768px) {
+    .hide-mob { display:none; }
+  }
+</style>
+</head>
+<body class="grid-bg">
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav class="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-[#050d1f]/80 border-b border-cyan-500/10">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center font-bold text-[#050d1f]">IA</div>
+      <div>
+        <div class="font-bold text-sm tracking-wide">ICONE Academy</div>
+        <div class="text-[10px] text-cyan-300/70 uppercase tracking-widest">× POLI</div>
+      </div>
+    </div>
+    <div class="hidden md:flex gap-7 text-sm font-medium">
+      <a href="#contexto" class="nav-link">Contexto</a>
+      <a href="#escala" class="nav-link">La Escala</a>
+      <a href="#programa" class="nav-link">Programa</a>
+      <a href="#equipo" class="nav-link">Equipo</a>
+      <a href="#demo" class="nav-link">Demo</a>
+      <a href="#inversion" class="nav-link">Inversión</a>
+    </div>
+    <a href="#cta" class="btn-primary text-sm" style="padding:10px 20px;">Hablemos →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-12">
+  <div class="max-w-6xl mx-auto text-center relative z-10">
+    <div class="section-label mb-8 floaty">
+      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+      PROPUESTA PARTE 2 · POLITÉCNICO GRANCOLOMBIANO
+    </div>
+    <h1 class="text-5xl md:text-7xl font-black leading-[1.05] mb-6">
+      IA del día día POLI
+      <br/>
+      <span class="text-grad-fire">La Escala.</span>
+    </h1>
+    <p class="text-xl md:text-2xl text-cyan-100/80 max-w-3xl mx-auto leading-relaxed mb-10">
+      En Parte 1 enseñamos a tu equipo a <b>usar la IA</b>.<br/>
+      En La Escala, cada persona <b class="text-grad-cyan">construye su propio ecosistema</b>:
+      agentes + apps + automatizaciones a su medida.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4 mb-16">
+      <a href="#escala" class="btn-primary">Ver la propuesta <span>↓</span></a>
+      <a href="#demo" class="btn-ghost">Probar la demo</a>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+      <div class="card p-5">
+        <div class="text-3xl font-black text-grad-cyan">29</div>
+        <div class="text-xs uppercase tracking-wider text-cyan-200/70 mt-1">ecosistemas únicos</div>
+      </div>
+      <div class="card p-5">
+        <div class="text-3xl font-black text-grad-cyan">10</div>
+        <div class="text-xs uppercase tracking-wider text-cyan-200/70 mt-1">semanas de inmersión</div>
+      </div>
+      <div class="card p-5">
+        <div class="text-3xl font-black text-grad-cyan">5</div>
+        <div class="text-xs uppercase tracking-wider text-cyan-200/70 mt-1">niveles de la escala</div>
+      </div>
+      <div class="card p-5">
+        <div class="text-3xl font-black text-grad-cyan">100%</div>
+        <div class="text-xs uppercase tracking-wider text-cyan-200/70 mt-1">aplicado al día a día</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTEXTO PARTE 1 -->
+<section id="contexto" class="relative py-24 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="section-label mb-4">PUNTO DE PARTIDA</div>
+    <h2 class="text-4xl md:text-5xl font-black mb-4">Lo que ya construimos juntos en <span class="text-grad-cyan">Parte 1</span></h2>
+    <p class="text-cyan-100/70 text-lg max-w-3xl mb-12">IA Productiva (Sept – Nov 2025). Sensibilizamos al equipo y abrimos la puerta a la IA generativa. Hoy POLI tiene los cimientos. La Escala es lo que viene encima.</p>
+
+    <div class="grid md:grid-cols-3 gap-6 mb-10">
+      <div class="card p-7">
+        <div class="text-cyan-400 text-sm font-bold mb-2">FASE 1 · DIAGNÓSTICO</div>
+        <h3 class="text-xl font-bold mb-3">Madurez digital medida</h3>
+        <p class="text-sm text-cyan-100/70">Encuesta de madurez + informe con mapa de capacidades por persona.</p>
+      </div>
+      <div class="card p-7">
+        <div class="text-purple-400 text-sm font-bold mb-2">FASE 2-3 · ADOPCIÓN</div>
+        <h3 class="text-xl font-bold mb-3">Herramientas base dominadas</h3>
+        <p class="text-sm text-cyan-100/70">ChatGPT, DALLE-2, Whisper, Eleven Labs, Pictory, ChatPDF, Elicit, GPTs para Docs/Slides.</p>
+      </div>
+      <div class="card p-7">
+        <div class="text-pink-400 text-sm font-bold mb-2">FASE 4-5 · SOSTENIBILIDAD</div>
+        <h3 class="text-xl font-bold mb-3">Plan de acción + soporte</h3>
+        <p class="text-sm text-cyan-100/70">Cierre con plan de adopción + acompañamiento por WhatsApp/Email/Teams 4 días continuos.</p>
+      </div>
+    </div>
+
+    <div class="card-strong p-8 rounded-2xl">
+      <div class="grid md:grid-cols-4 gap-6 text-center">
+        <div><div class="text-4xl font-black text-grad-cyan">29</div><div class="text-xs uppercase tracking-widest text-cyan-100/60 mt-2">Participantes</div></div>
+        <div><div class="text-4xl font-black text-grad-cyan">8</div><div class="text-xs uppercase tracking-widest text-cyan-100/60 mt-2">Semanas</div></div>
+        <div><div class="text-4xl font-black text-grad-cyan">~24h</div><div class="text-xs uppercase tracking-widest text-cyan-100/60 mt-2">Por área</div></div>
+        <div><div class="text-4xl font-black text-grad-cyan">$7.5M</div><div class="text-xs uppercase tracking-widest text-cyan-100/60 mt-2">Inversión Parte 1</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EL GAP -->
+<section class="relative py-20 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <div class="section-label mb-4" style="border-color: rgba(255,46,154,0.4); color:#ff8fbf; background: rgba(255,46,154,0.06);">EL HUECO QUE FALTA POR CERRAR</div>
+        <h2 class="text-4xl md:text-5xl font-black mb-6">Sabemos <span class="line-through opacity-40">usar la IA</span>...<br/><span class="text-grad-fire">pero no construirla.</span></h2>
+        <p class="text-cyan-100/80 text-lg leading-relaxed mb-6">
+          Parte 1 cerró el gap de <b>"no sé qué es"</b>. Pero el equipo del POLI sigue dependiendo de las herramientas <b>como están</b>.
+          Cada quien usa ChatGPT genérico, sin memoria de su cargo, sin conectarse a HubSpot, sin automatizar su rutina, sin desplegar SU herramienta.
+        </p>
+        <p class="text-cyan-100/80 text-lg leading-relaxed">
+          La Escala convierte a cada persona en <b class="text-grad-cyan">arquitecta de su propio ecosistema IA</b>.
+          No "aprende sobre IA". <b>La construye, la integra y la opera.</b>
+        </p>
+      </div>
+      <div class="space-y-3">
+        <div class="card p-5 flex gap-4 items-start">
+          <div class="text-2xl">⚠️</div>
+          <div>
+            <div class="font-bold">Sin memoria personal</div>
+            <div class="text-sm text-cyan-100/60">Cada conversación empieza de cero. No conoce el cargo, el equipo, ni los proyectos.</div>
+          </div>
+        </div>
+        <div class="card p-5 flex gap-4 items-start">
+          <div class="text-2xl">⚠️</div>
+          <div>
+            <div class="font-bold">Sin integración real</div>
+            <div class="text-sm text-cyan-100/60">No se conecta a HubSpot, correo, Drive, Excel ni a las herramientas internas del POLI.</div>
+          </div>
+        </div>
+        <div class="card p-5 flex gap-4 items-start">
+          <div class="text-2xl">⚠️</div>
+          <div>
+            <div class="font-bold">Sin apps propias</div>
+            <div class="text-sm text-cyan-100/60">Nadie en el equipo tiene SU dashboard, SU calculadora, SU diagnóstico para clientes.</div>
+          </div>
+        </div>
+        <div class="card p-5 flex gap-4 items-start">
+          <div class="text-2xl">⚠️</div>
+          <div>
+            <div class="font-bold">Sin automatización viva</div>
+            <div class="text-sm text-cyan-100/60">Las tareas repetitivas (reportes, follow-ups, scoring) siguen siendo manuales.</div>
+          </div>
+        </div>
+        <div class="card p-5 flex gap-4 items-start">
+          <div class="text-2xl">⚠️</div>
+          <div>
+            <div class="font-bold">Sin gobierno de IA</div>
+            <div class="text-sm text-cyan-100/60">No hay política de brand voice, datos sensibles, ni replicación entre roles.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LA ESCALA · 5 NIVELES -->
+<section id="escala" class="relative py-24 px-6">
+  <div class="max-w-7xl mx-auto text-center mb-14">
+    <div class="section-label mb-4">EL MÉTODO ICONE</div>
+    <h2 class="text-4xl md:text-6xl font-black mb-4">La <span class="text-grad-fire">Escala</span> de 5 Niveles</h2>
+    <p class="text-cyan-100/70 text-lg max-w-3xl mx-auto">Cada persona del POLI sube los 5 peldaños. Parte 1 los llevó del Nivel 0 al Nivel 1. Parte 2 los lleva del 2 al 5.</p>
+  </div>
+
+  <div class="max-w-4xl mx-auto space-y-4" id="pyramid">
+    <div class="step" data-step="5" style="max-width: 100%;">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-pink-400 tracking-widest">NIVEL 5 · DUEÑO DEL ECOSISTEMA</div>
+          <div class="text-xl font-bold mt-1">Orquesta su propio sistema IA y replica al equipo</div>
+        </div>
+        <div class="hidden md:block text-3xl">👑</div>
+      </div>
+    </div>
+    <div class="step" data-step="4" style="max-width: 92%;">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-orange-400 tracking-widest">NIVEL 4 · INTEGRADOR</div>
+          <div class="text-xl font-bold mt-1">Conecta IA con sus herramientas reales (CRM, Drive, correo)</div>
+        </div>
+        <div class="hidden md:block text-3xl">🔗</div>
+      </div>
+    </div>
+    <div class="step" data-step="3" style="max-width: 84%;">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-purple-400 tracking-widest">NIVEL 3 · CONSTRUCTOR</div>
+          <div class="text-xl font-bold mt-1">Crea SU app/dashboard a la medida y lo despliega</div>
+        </div>
+        <div class="hidden md:block text-3xl">🛠️</div>
+      </div>
+    </div>
+    <div class="step active" data-step="2" style="max-width: 76%;">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-cyan-300 tracking-widest">NIVEL 2 · ARQUITECTO PERSONAL ← PARTE 2 ARRANCA AQUÍ</div>
+          <div class="text-xl font-bold mt-1">Diseña su agente con memoria, skills y voz propia</div>
+        </div>
+        <div class="hidden md:block text-3xl">🧠</div>
+      </div>
+    </div>
+    <div class="step" data-step="1" style="max-width: 68%; opacity:0.55;">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-green-300 tracking-widest">NIVEL 1 · USUARIO ✓ Parte 1 cerrada</div>
+          <div class="text-xl font-bold mt-1">Usa ChatGPT, DALLE, GPTs en el día a día</div>
+        </div>
+        <div class="hidden md:block text-3xl">✓</div>
+      </div>
+    </div>
+    <div class="step" data-step="0" style="max-width: 60%; opacity:0.35;">
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="text-xs font-bold text-cyan-100/60 tracking-widest">NIVEL 0 · OBSERVADOR ✓ Punto de partida</div>
+          <div class="text-sm mt-1">Conoce que la IA existe pero no la integra</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 PILARES -->
+<section class="relative py-20 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <div class="section-label mb-4">LOS 4 PILARES</div>
+      <h2 class="text-4xl md:text-5xl font-black">Todo lo que aprenden, <span class="text-grad-cyan">se cruza con su rol</span></h2>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="card p-7 h-full">
+        <div class="text-4xl mb-4">🎯</div>
+        <div class="pill pill-cyan mb-3">PILAR 1</div>
+        <h3 class="text-xl font-bold mb-2">IA aplicada a Marketing</h3>
+        <p class="text-sm text-cyan-100/70 mb-4">Para Néstor, Natalia, Laura, Camilo, Yury, Daniela y el equipo creativo.</p>
+        <ul class="text-sm text-cyan-100/80 space-y-1.5">
+          <li>· Brand voice con Claude/GPT custom</li>
+          <li>· Generación de copy a escala</li>
+          <li>· Calculadora de campañas ATL/BTL</li>
+          <li>· SEO automation con IA</li>
+          <li>· Investigación de mercado en minutos</li>
+        </ul>
+      </div>
+      <div class="card p-7 h-full">
+        <div class="text-4xl mb-4">💼</div>
+        <div class="pill pill-orange mb-3">PILAR 2</div>
+        <h3 class="text-xl font-bold mb-2">IA aplicada a Ventas</h3>
+        <p class="text-sm text-cyan-100/70 mb-4">Para Sandra, John, Diana, Libia y todas las Directoras de Zona.</p>
+        <ul class="text-sm text-cyan-100/80 space-y-1.5">
+          <li>· Scoring de leads automatizado</li>
+          <li>· Outreach personalizado por zona</li>
+          <li>· Generador de propuestas B2B/B2G</li>
+          <li>· Dashboard de pipeline por zona</li>
+          <li>· Forecast de matrículas con IA</li>
+        </ul>
+      </div>
+      <div class="card p-7 h-full">
+        <div class="text-4xl mb-4">⚡</div>
+        <div class="pill pill-purple mb-3">PILAR 3</div>
+        <h3 class="text-xl font-bold mb-2">Productividad diaria</h3>
+        <p class="text-sm text-cyan-100/70 mb-4">Para TODO el equipo. La base de un día con IA.</p>
+        <ul class="text-sm text-cyan-100/80 space-y-1.5">
+          <li>· Briefing matutino automático</li>
+          <li>· Resumen de correos y reuniones</li>
+          <li>· Análisis de Excel sin fórmulas</li>
+          <li>· Memoria persistente del cargo</li>
+          <li>· Asistente personal con MCP</li>
+        </ul>
+      </div>
+      <div class="card p-7 h-full">
+        <div class="text-4xl mb-4">🚀</div>
+        <div class="pill pill-pink mb-3">PILAR 4</div>
+        <h3 class="text-xl font-bold mb-2">Apps + automatizaciones</h3>
+        <p class="text-sm text-cyan-100/70 mb-4">Cada persona despliega SU herramienta funcional.</p>
+        <ul class="text-sm text-cyan-100/80 space-y-1.5">
+          <li>· App propia en GitHub Pages</li>
+          <li>· Dominio personal o de equipo</li>
+          <li>· Flujos n8n / Make / Zapier</li>
+          <li>· Integración con HubSpot/Drive</li>
+          <li>· Plan de mantenimiento</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAMA -->
+<section id="programa" class="relative py-24 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <div class="section-label mb-4">EL PROGRAMA</div>
+      <h2 class="text-4xl md:text-5xl font-black">5 ciclos · 10 semanas · <span class="text-grad-cyan">1 ecosistema por persona</span></h2>
+      <p class="text-cyan-100/70 text-lg max-w-3xl mx-auto mt-4">Formato híbrido (virtual + presencial), mismo modelo que Parte 1 pero con labs 1:1, mentorías y entregables construidos en vivo.</p>
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-2 mb-8" id="tabs">
+      <button class="tab-btn active" data-tab="c1">Ciclo 1 · Diagnóstico de Ecosistema</button>
+      <button class="tab-btn" data-tab="c2">Ciclo 2 · Agentes Personales</button>
+      <button class="tab-btn" data-tab="c3">Ciclo 3 · Apps a la Medida</button>
+      <button class="tab-btn" data-tab="c4">Ciclo 4 · Automatizaciones</button>
+      <button class="tab-btn" data-tab="c5">Ciclo 5 · Integración y Escala</button>
+    </div>
+
+    <div class="card-strong p-8 md:p-10 rounded-2xl">
+      <div class="tab-content" data-content="c1">
+        <div class="grid md:grid-cols-3 gap-8">
+          <div>
+            <div class="text-cyan-400 text-xs font-bold tracking-widest mb-2">SEMANAS 1-2</div>
+            <h3 class="text-2xl font-bold mb-3">Diagnóstico de Ecosistema</h3>
+            <p class="text-cyan-100/70 text-sm">Cada participante mapea su día a día, sus herramientas, sus dolores y diseña la arquitectura de SU ecosistema IA.</p>
+          </div>
+          <div class="md:col-span-2">
+            <h4 class="font-bold mb-3 text-cyan-300">Qué hacemos</h4>
+            <ul class="space-y-2 text-sm text-cyan-100/80">
+              <li>✓ Auditoría individual de procesos por cargo (29 mini-diagnósticos)</li>
+              <li>✓ Inventario de herramientas actuales (HubSpot, Office, Drive, Teams, WhatsApp Business)</li>
+              <li>✓ Identificación de 5 tareas que cada persona quiere automatizar</li>
+              <li>✓ Diseño del <b>Blueprint Personal</b> (one-pager visual)</li>
+              <li>✓ Selección de stack IA por rol (Claude Project vs GPT custom vs ambos)</li>
+            </ul>
+            <div class="mt-5 p-4 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+              <div class="text-xs font-bold text-cyan-300 mb-1">ENTREGABLE</div>
+              <div class="text-sm">Blueprint Personal de Ecosistema IA (1 por persona, validado en sesión 1:1)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content hidden" data-content="c2">
+        <div class="grid md:grid-cols-3 gap-8">
+          <div>
+            <div class="text-purple-400 text-xs font-bold tracking-widest mb-2">SEMANAS 3-4</div>
+            <h3 class="text-2xl font-bold mb-3">Agentes Personales con Memoria</h3>
+            <p class="text-cyan-100/70 text-sm">Construimos el "Asistente IA" de cada persona: con memoria persistente de su cargo, skills personalizados y voz propia.</p>
+          </div>
+          <div class="md:col-span-2">
+            <h4 class="font-bold mb-3 text-purple-300">Qué hacemos</h4>
+            <ul class="space-y-2 text-sm text-cyan-100/80">
+              <li>✓ Construcción del Claude Project personal (uno por participante)</li>
+              <li>✓ Skills custom: brand voice POLI, knowledge del cargo, vocabulario interno</li>
+              <li>✓ Memoria persistente: el agente recuerda proyectos, contactos, decisiones</li>
+              <li>✓ Conectores MCP a Gmail, Calendar, Drive, OneDrive, Teams</li>
+              <li>✓ Prompts maestros para tareas recurrentes</li>
+            </ul>
+            <div class="mt-5 p-4 rounded-lg bg-purple-500/10 border border-purple-500/30">
+              <div class="text-xs font-bold text-purple-300 mb-1">ENTREGABLE</div>
+              <div class="text-sm">29 agentes IA personales, funcionando y conectados a sus herramientas reales</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content hidden" data-content="c3">
+        <div class="grid md:grid-cols-3 gap-8">
+          <div>
+            <div class="text-pink-400 text-xs font-bold tracking-widest mb-2">SEMANAS 5-6</div>
+            <h3 class="text-2xl font-bold mb-3">Apps a la Medida (Sesiones separadas Mercadeo / Matrículas)</h3>
+            <p class="text-cyan-100/70 text-sm">Cada persona construye y despliega SU app web propia, alojada en dominio del POLI o de ICONE.</p>
+          </div>
+          <div class="md:col-span-2">
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+              <div class="p-4 rounded-lg bg-cyan-500/8 border border-cyan-500/25">
+                <div class="text-xs font-bold text-cyan-300 mb-2">📣 MERCADEO</div>
+                <ul class="text-sm space-y-1 text-cyan-100/80">
+                  <li>· Generador de briefs creativos</li>
+                  <li>· Auditor de campañas ATL/BTL</li>
+                  <li>· Diagnosticador SEO interno</li>
+                  <li>· Panel de canales digitales</li>
+                  <li>· Monitor de marca + competencia</li>
+                </ul>
+              </div>
+              <div class="p-4 rounded-lg bg-orange-500/8 border border-orange-500/25">
+                <div class="text-xs font-bold text-orange-300 mb-2">💼 MATRÍCULAS</div>
+                <ul class="text-sm space-y-1 text-cyan-100/80">
+                  <li>· CRM ligero por zona</li>
+                  <li>· Scoring de leads</li>
+                  <li>· Generador de propuestas B2B/B2G</li>
+                  <li>· Dashboard de convenios</li>
+                  <li>· Calculadora de meta vs cumplido</li>
+                </ul>
+              </div>
+            </div>
+            <div class="p-4 rounded-lg bg-pink-500/10 border border-pink-500/30">
+              <div class="text-xs font-bold text-pink-300 mb-1">ENTREGABLE</div>
+              <div class="text-sm">App web funcional desplegada con URL pública (29 apps únicas)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content hidden" data-content="c4">
+        <div class="grid md:grid-cols-3 gap-8">
+          <div>
+            <div class="text-orange-400 text-xs font-bold tracking-widest mb-2">SEMANAS 7-8</div>
+            <h3 class="text-2xl font-bold mb-3">Automatizaciones del Día a Día</h3>
+            <p class="text-cyan-100/70 text-sm">Conectamos su agente y su app con n8n / Make / Zapier para que la rutina corra sola.</p>
+          </div>
+          <div class="md:col-span-2">
+            <h4 class="font-bold mb-3 text-orange-300">Flujos típicos por rol</h4>
+            <ul class="space-y-2 text-sm text-cyan-100/80">
+              <li>✓ <b>Directoras de Zona:</b> Lead llega → enriquecimiento → CRM → mail seguimiento → recordatorio en calendar</li>
+              <li>✓ <b>Content Manager:</b> Idea → brief auto → primera versión → revisión → calendario editorial</li>
+              <li>✓ <b>Estudios Estratégicos:</b> Datos → análisis IA → insight → reporte automático para alta dirección</li>
+              <li>✓ <b>SEO / Canal Digital:</b> Keyword research → contenido → optimización → publicación</li>
+              <li>✓ <b>Convenios B2B/B2G:</b> Pipeline → scoring → propuesta personalizada → envío + firma</li>
+            </ul>
+            <div class="mt-5 p-4 rounded-lg bg-orange-500/10 border border-orange-500/30">
+              <div class="text-xs font-bold text-orange-300 mb-1">ENTREGABLE</div>
+              <div class="text-sm">Mínimo 3 automatizaciones activas por persona (87+ flujos en total)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content hidden" data-content="c5">
+        <div class="grid md:grid-cols-3 gap-8">
+          <div>
+            <div class="text-green-400 text-xs font-bold tracking-widest mb-2">SEMANAS 9-10</div>
+            <h3 class="text-2xl font-bold mb-3">Integración + Gobierno + Escala</h3>
+            <p class="text-cyan-100/70 text-sm">El ecosistema personal se conecta con el ecosistema del equipo. Política de IA y plan de replicación.</p>
+          </div>
+          <div class="md:col-span-2">
+            <h4 class="font-bold mb-3 text-green-300">Qué hacemos</h4>
+            <ul class="space-y-2 text-sm text-cyan-100/80">
+              <li>✓ Conexión de los agentes con el ecosistema del área (Mercadeo / Matrículas)</li>
+              <li>✓ Política interna de IA: brand voice, datos sensibles, uso responsable</li>
+              <li>✓ Playbook de replicación: cómo los nuevos miembros heredan el ecosistema</li>
+              <li>✓ Métricas de adopción: tiempo ahorrado, output generado, ROI</li>
+              <li>✓ <b>Demo Day:</b> los 29 presentan su ecosistema al comité directivo</li>
+            </ul>
+            <div class="mt-5 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+              <div class="text-xs font-bold text-green-300 mb-1">ENTREGABLE FINAL</div>
+              <div class="text-sm">Manual del Ecosistema POLI + plan de escala a 6/12 meses + ceremonia Demo Day</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EQUIPO -->
+<section id="equipo" class="relative py-24 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-10">
+      <div class="section-label mb-4">LOS 29 ECOSISTEMAS</div>
+      <h2 class="text-4xl md:text-5xl font-black">Tu equipo, <span class="text-grad-cyan">persona por persona</span></h2>
+      <p class="text-cyan-100/70 text-lg max-w-3xl mx-auto mt-4">Cada uno sale con SU ecosistema único. Filtra para ver qué construirá cada quien.</p>
+    </div>
+
+    <div class="flex justify-center gap-3 mb-8" id="team-filter">
+      <button class="tab-btn active" data-filter="all">Todos · 29</button>
+      <button class="tab-btn" data-filter="mercadeo">Mercadeo · 15</button>
+      <button class="tab-btn" data-filter="matriculas">Matrículas · 14</button>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="team-grid"></div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo" class="relative py-24 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-10">
+      <div class="section-label mb-4">DEMO EN VIVO</div>
+      <h2 class="text-4xl md:text-5xl font-black">Calculadora de <span class="text-grad-fire">ROI Personal</span></h2>
+      <p class="text-cyan-100/70 text-lg max-w-3xl mx-auto mt-4">Esto es exactamente el tipo de app que cada persona del POLI construirá. Tóquela.</p>
+    </div>
+
+    <div class="card-strong p-8 md:p-12 rounded-2xl">
+      <div class="grid md:grid-cols-2 gap-10">
+        <div class="space-y-6">
+          <div>
+            <label class="text-cyan-300 font-bold text-sm mb-2 block">Personas en el programa: <span id="vp" class="text-grad-cyan text-xl">29</span></label>
+            <input type="range" id="r-personas" min="10" max="40" value="29" class="w-full">
+          </div>
+          <div>
+            <label class="text-cyan-300 font-bold text-sm mb-2 block">Horas ahorradas por semana por persona: <span id="vh" class="text-grad-cyan text-xl">5</span> h</label>
+            <input type="range" id="r-horas" min="2" max="12" value="5" class="w-full">
+          </div>
+          <div>
+            <label class="text-cyan-300 font-bold text-sm mb-2 block">Costo hora promedio (COP): <span id="vc" class="text-grad-cyan text-xl">$45.000</span></label>
+            <input type="range" id="r-costo" min="25000" max="120000" value="45000" step="5000" class="w-full">
+          </div>
+          <div>
+            <label class="text-cyan-300 font-bold text-sm mb-2 block">Inversión Parte 2 (COP): <span id="vi" class="text-grad-cyan text-xl">$24M</span></label>
+            <input type="range" id="r-inv" min="14500000" max="32000000" value="24000000" step="500000" class="w-full">
+          </div>
+        </div>
+        <div class="bg-[#050d1f]/50 rounded-2xl p-7 border border-cyan-500/20">
+          <div class="text-xs uppercase tracking-widest text-cyan-300 mb-2">Ahorro anual estimado</div>
+          <div class="text-5xl font-black text-grad-green" id="roi-anual">$0</div>
+          <div class="text-sm text-cyan-100/60 mb-6 mt-1">en horas-persona recuperadas</div>
+
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between border-b border-cyan-500/10 pb-2">
+              <span class="text-cyan-100/70">Horas recuperadas / año</span>
+              <span class="font-bold" id="roi-horas">0 h</span>
+            </div>
+            <div class="flex justify-between border-b border-cyan-500/10 pb-2">
+              <span class="text-cyan-100/70">Retorno sobre inversión (ROI)</span>
+              <span class="font-bold text-grad-cyan" id="roi-x">0×</span>
+            </div>
+            <div class="flex justify-between border-b border-cyan-500/10 pb-2">
+              <span class="text-cyan-100/70">Tiempo de pago (payback)</span>
+              <span class="font-bold" id="roi-payback">– meses</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-cyan-100/70">FTEs equivalentes liberados</span>
+              <span class="font-bold" id="roi-fte">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CRONOGRAMA -->
+<section class="relative py-20 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <div class="section-label mb-4">CRONOGRAMA SUGERIDO</div>
+      <h2 class="text-4xl md:text-5xl font-black">10 semanas, <span class="text-grad-cyan">cohorte 2026</span></h2>
+    </div>
+    <div class="card p-6 rounded-2xl">
+      <canvas id="gantt"></canvas>
+    </div>
+    <p class="text-center text-cyan-100/60 text-sm mt-4">Mismo modelo de Parte 1 (sesión mercadeo + sesión matrículas por semana) + labs 1:1 + Demo Day final.</p>
+  </div>
+</section>
+
+<!-- INVERSIÓN -->
+<section id="inversion" class="relative py-24 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <div class="section-label mb-4">INVERSIÓN</div>
+      <h2 class="text-4xl md:text-5xl font-black">Tres formas de <span class="text-grad-fire">escalar</span></h2>
+      <p class="text-cyan-100/70 text-lg max-w-3xl mx-auto mt-4">Mismo equipo (29 personas). Mismo modelo. Diferente profundidad de entregables por persona.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Esencial -->
+      <div class="card tier p-7 rounded-2xl">
+        <div class="pill pill-cyan mb-4">ESENCIAL</div>
+        <h3 class="text-2xl font-bold">Acelerar</h3>
+        <p class="text-cyan-100/60 text-sm mt-1 mb-5">8 semanas · 1 app + 2 automatizaciones por persona</p>
+        <div class="text-4xl font-black text-grad-cyan mb-1">$14.5M</div>
+        <div class="text-xs text-cyan-100/60 mb-6">~$500k por persona · IVA no incluido</div>
+        <ul class="space-y-2 text-sm text-cyan-100/80">
+          <li>✓ Diagnóstico + agentes personales</li>
+          <li>✓ 1 app desplegada por persona</li>
+          <li>✓ 2 automatizaciones mínimas</li>
+          <li>✓ Soporte 15 días post</li>
+          <li class="opacity-40">— Sin dominio personal</li>
+          <li class="opacity-40">— Sin gobierno de IA</li>
+        </ul>
+      </div>
+
+      <!-- Estándar / Featured -->
+      <div class="card tier tier-featured p-7 rounded-2xl glow-cyan">
+        <div class="flex justify-between items-center mb-4">
+          <div class="pill pill-pink">ESTÁNDAR</div>
+          <span class="text-xs font-bold text-pink-300">⭐ RECOMENDADO</span>
+        </div>
+        <h3 class="text-2xl font-bold">Escalar</h3>
+        <p class="text-cyan-100/60 text-sm mt-1 mb-5">10 semanas · ecosistema completo por persona</p>
+        <div class="text-4xl font-black text-grad-fire mb-1">$24M</div>
+        <div class="text-xs text-cyan-100/60 mb-6">~$827k por persona · IVA no incluido</div>
+        <ul class="space-y-2 text-sm text-cyan-100/80">
+          <li>✓ Los 5 ciclos completos</li>
+          <li>✓ Agente + app + 3 automatizaciones</li>
+          <li>✓ Dominio personal o de equipo</li>
+          <li>✓ Política de gobierno IA del POLI</li>
+          <li>✓ Demo Day con comité directivo</li>
+          <li>✓ Soporte 30 días post</li>
+        </ul>
+      </div>
+
+      <!-- Premium -->
+      <div class="card tier p-7 rounded-2xl">
+        <div class="pill pill-purple mb-4">PREMIUM</div>
+        <h3 class="text-2xl font-bold">Liderar</h3>
+        <p class="text-cyan-100/60 text-sm mt-1 mb-5">12 semanas · ecosistema + replicación al equipo</p>
+        <div class="text-4xl font-black text-grad-cyan mb-1">$32M</div>
+        <div class="text-xs text-cyan-100/60 mb-6">~$1.1M por persona · IVA no incluido</div>
+        <ul class="space-y-2 text-sm text-cyan-100/80">
+          <li>✓ Todo lo del Estándar</li>
+          <li>✓ Playbook de replicación a 100+ personas</li>
+          <li>✓ Integración con HubSpot del POLI</li>
+          <li>✓ 2 trainers internos certificados</li>
+          <li>✓ Sesión board-level (rectoría)</li>
+          <li>✓ Soporte 90 días + retainer trimestral</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="text-center mt-10 text-cyan-100/60 text-sm">
+      Valor comparativo · Parte 1 (sensibilización): $7.5M = ~$258k por persona<br/>
+      Parte 2 — La Escala (construcción real): desde $500k a $1.1M por persona, con entregables tangibles desplegados.
+    </div>
+  </div>
+</section>
+
+<!-- QUÉ PASA DESPUÉS -->
+<section class="relative py-20 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <div class="section-label mb-4">DESPUÉS DE LA ESCALA</div>
+      <h2 class="text-4xl md:text-5xl font-black">El POLI 12 meses <span class="text-grad-cyan">después</span></h2>
+    </div>
+    <div class="grid md:grid-cols-4 gap-5">
+      <div class="card p-7">
+        <div class="text-4xl mb-3">🧠</div>
+        <h4 class="font-bold mb-2">29 agentes vivos</h4>
+        <p class="text-sm text-cyan-100/70">Cada persona con su asistente IA personal trabajando todos los días.</p>
+      </div>
+      <div class="card p-7">
+        <div class="text-4xl mb-3">📱</div>
+        <h4 class="font-bold mb-2">29 apps en producción</h4>
+        <p class="text-sm text-cyan-100/70">Calculadoras, dashboards, diagnósticos y generadores construidos a la medida.</p>
+      </div>
+      <div class="card p-7">
+        <div class="text-4xl mb-3">🔄</div>
+        <h4 class="font-bold mb-2">87+ automatizaciones</h4>
+        <p class="text-sm text-cyan-100/70">Flujos corriendo solos: leads, propuestas, reportes, follow-ups.</p>
+      </div>
+      <div class="card p-7">
+        <div class="text-4xl mb-3">🌱</div>
+        <h4 class="font-bold mb-2">Cultura replicable</h4>
+        <p class="text-sm text-cyan-100/70">Cada nuevo miembro del POLI hereda el ecosistema en su primer día.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="relative py-24 px-6">
+  <div class="max-w-4xl mx-auto text-center">
+    <div class="card-strong p-10 md:p-14 rounded-3xl glow-purple">
+      <div class="section-label mb-6">SIGUIENTE PASO</div>
+      <h2 class="text-4xl md:text-5xl font-black mb-6">¿Listos para <span class="text-grad-fire">subir la escala</span>?</h2>
+      <p class="text-cyan-100/80 text-lg max-w-2xl mx-auto mb-8">
+        Reunámonos esta semana, validamos el alcance final y arrancamos cohorte 2026 con los mismos 29 héroes que ya formamos en Parte 1.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4 mb-8">
+        <a href="https://wa.me/573158940980" class="btn-primary">📱 WhatsApp Jorge Hugo</a>
+        <a href="mailto:jorgehugoperez@iconeacademy.com" class="btn-ghost">✉ jorgehugoperez@iconeacademy.com</a>
+      </div>
+      <div class="text-sm text-cyan-100/60">
+        ICONE Academy · <a href="https://www.iconeacademy.com" class="text-cyan-300 underline">www.iconeacademy.com</a> · Cel. 315 894 0980
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="relative py-12 px-6 border-t border-cyan-500/10">
+  <div class="max-w-7xl mx-auto text-center text-cyan-100/40 text-xs">
+    © 2026 ICONE Academy × Politécnico Grancolombiano · Propuesta confidencial · IA del día día POLI · La Escala
+  </div>
+</footer>
+
+<script>
+// ====== Particle stars ======
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = document.body.scrollHeight;
+  stars = Array.from({length: 180}, () => ({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*1.6 + 0.2,
+    op: Math.random()*0.6 + 0.2,
+    s: Math.random()*0.25 + 0.05,
+    c: ['#00d4ff','#7b2fff','#ff2e9a','#ffffff'][Math.floor(Math.random()*4)]
+  }));
+}
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle = s.c;
+    ctx.globalAlpha = s.op;
+    ctx.fill();
+    s.y += s.s;
+    if (s.y > canvas.height) { s.y = 0; s.x = Math.random()*canvas.width; }
+  });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', resize);
+setTimeout(()=>{ resize(); draw(); }, 100);
+
+// ====== Tabs Programa ======
+document.querySelectorAll('#tabs .tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#tabs .tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const id = btn.dataset.tab;
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.add('hidden'));
+    document.querySelector(`[data-content="${id}"]`).classList.remove('hidden');
+  });
+});
+
+// ====== Pyramid hover ======
+document.querySelectorAll('.step').forEach(s=>{
+  s.addEventListener('click', ()=>{
+    document.querySelectorAll('.step').forEach(x=>x.classList.remove('active'));
+    s.classList.add('active');
+  });
+});
+
+// ====== Equipo data ======
+const team = [
+  // Mercadeo (15)
+  {n:"Néstor Iván Moreno", c:"Gerente de Mercadeo", a:"mercadeo", icon:"🎯", eco:"Agente de gerencia + dashboard 360 de canales + reporte semanal automático para rectoría"},
+  {n:"Natalia Rincón", c:"Dir. Marca y Desarrollo de Canales", a:"mercadeo", icon:"🏷️", eco:"App de monitoreo de marca + comparador competitivo en tiempo real"},
+  {n:"Laura Barrera", c:"Dir. Desarrollo de Mercado", a:"mercadeo", icon:"📈", eco:"Generador de informes de oportunidad + agente de inteligencia de mercado"},
+  {n:"Camilo Torres", c:"Jefe ATL", a:"mercadeo", icon:"📺", eco:"Calculadora de planes ATL + auditor de creativos con IA"},
+  {n:"Yury Barrios", c:"Especialista Canal Digital", a:"mercadeo", icon:"💻", eco:"Panel del canal digital + generador de copy multiplataforma"},
+  {n:"Laura Castellanos", c:"Coord. BTL", a:"mercadeo", icon:"🎪", eco:"Planificador de activaciones BTL + medidor de impacto post-evento"},
+  {n:"Daniela Ricardo", c:"Especialista B2B-CSU", a:"mercadeo", icon:"🤝", eco:"App de seguimiento de campañas B2B + brief auto para CSU"},
+  {n:"John Armesto", c:"Jefe Estudios Estratégicos", a:"mercadeo", icon:"🔬", eco:"Agente de research + generador de informes ejecutivos para alta dirección"},
+  {n:"Jhasson Celis", c:"Especialista Estudios Estratégicos", a:"mercadeo", icon:"📊", eco:"Dashboard de estudios + visualizador de tendencias del sector educación"},
+  {n:"Laura García", c:"Especialista Estudios Estratégicos", a:"mercadeo", icon:"📉", eco:"Analizador de participación de mercado + monitor de precios competencia"},
+  {n:"Jose David Jerez", c:"Content Manager", a:"mercadeo", icon:"✍️", eco:"Calendario editorial IA + brief-to-content + revisor de brand voice"},
+  {n:"Stephanie Aparicio", c:"Asesor Digital", a:"mercadeo", icon:"🎨", eco:"Generador de piezas para redes + agente creativo personal"},
+  {n:"Santiago López", c:"Asesor Digital", a:"mercadeo", icon:"🎨", eco:"Productor de contenido multiformato + asistente de diseño"},
+  {n:"Giovanny Hidrobo", c:"Líder Estrategia SEO", a:"mercadeo", icon:"🔍", eco:"App de SEO técnico + entrenador de GPTs para contenido orgánico"},
+  {n:"María Buitrago", c:"Analista de Mercadeo", a:"mercadeo", icon:"🧮", eco:"Calculadora de KPIs + reporte mensual automatizado del área"},
+  // Matrículas (14)
+  {n:"Sandra Davila", c:"Educación para la vida B2B", a:"matriculas", icon:"🏢", eco:"Generador de propuestas a la medida B2B + agente de seguimiento a cuentas"},
+  {n:"John Marín", c:"Educación para la vida B2G", a:"matriculas", icon:"🏛️", eco:"Asistente de licitaciones públicas + monitor SECOP automatizado"},
+  {n:"Diana Rayo", c:"Líder B2C", a:"matriculas", icon:"👥", eco:"App de planeación de oferta de educación continua + dashboard de cursos"},
+  {n:"Carolina Tovar", c:"Gestión Comercial y Canales", a:"matriculas", icon:"⚙️", eco:"Centro back office IA: análisis de cumplimiento + proyecciones de matrícula"},
+  {n:"Jimena Quintero", c:"Director Convenios", a:"matriculas", icon:"🤝", eco:"CRM ligero de convenios + generador de propuestas a aliados"},
+  {n:"Libia Cabra", c:"Gerente Matrículas", a:"matriculas", icon:"📋", eco:"Dashboard 360 de la gerencia + agente de coaching para directoras de zona"},
+  {n:"Jhon Rodríguez", c:"Dir. Zona Bogotá Norte", a:"matriculas", icon:"📍", eco:"App de zona Bogotá Norte + scoring de leads + agenda automática de citas"},
+  {n:"Marcela Gil", c:"Directora Zona", a:"matriculas", icon:"📍", eco:"Panel de zona + generador de outreach por colegio/empresa"},
+  {n:"Natalia Ríos", c:"Directora Zona", a:"matriculas", icon:"📍", eco:"App de alianzas regionales + tracker de convenios por entidad"},
+  {n:"Paula Pinzón", c:"Directora Zona", a:"matriculas", icon:"📍", eco:"Implementador de estrategia comercial regional + reporte semanal"},
+  {n:"Jose Bonilla", c:"Jefe Matrículas Medellín", a:"matriculas", icon:"📍", eco:"CRM ligero Medellín + dashboard pregrado/posgrado + agente de cierre"},
+  {n:"Angela Triana", c:"Directora Zona", a:"matriculas", icon:"📍", eco:"App de zona + asistente de reuniones con aliados"},
+  {n:"Cristian Linares", c:"Especialista Estadística", a:"matriculas", icon:"📐", eco:"Dashboard estadístico vivo + analizador de cumplimiento por canal"},
+  {n:"Yurnio Rengifo", c:"Jefe Matrículas Bogotá / Convenios Gobierno", a:"matriculas", icon:"🏛️", eco:"Asistente de gestión de convenios públicos (Jóvenes a la E, Fondos) + tracker de cohorte"}
+];
+
+const grid = document.getElementById('team-grid');
+function renderTeam(filter='all'){
+  grid.innerHTML = '';
+  const list = team.filter(p => filter==='all' || p.a===filter);
+  list.forEach((p,i)=>{
+    const el = document.createElement('div');
+    el.className = `person ${p.a}`;
+    el.innerHTML = `
+      <div class="flex items-start gap-3">
+        <div class="text-3xl">${p.icon}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-sm leading-tight truncate">${p.n}</div>
+          <div class="text-[11px] uppercase tracking-wider mt-1 ${p.a==='mercadeo'?'text-cyan-300':'text-orange-300'}">${p.c}</div>
+        </div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-cyan-500/10">
+        <div class="text-[10px] uppercase tracking-widest text-cyan-100/50 mb-1">construirá</div>
+        <div class="text-xs text-cyan-100/85 leading-relaxed">${p.eco}</div>
+      </div>
+    `;
+    grid.appendChild(el);
+  });
+}
+renderTeam();
+
+document.querySelectorAll('#team-filter .tab-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#team-filter .tab-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    renderTeam(b.dataset.filter);
+  });
+});
+
+// ====== ROI Calculator ======
+function fmt(n){ return '$' + Math.round(n).toLocaleString('es-CO'); }
+function fmtM(n){ if (n>=1e6) return '$'+(n/1e6).toFixed(1)+'M'; return fmt(n); }
+function updateROI(){
+  const p = +document.getElementById('r-personas').value;
+  const h = +document.getElementById('r-horas').value;
+  const c = +document.getElementById('r-costo').value;
+  const inv = +document.getElementById('r-inv').value;
+
+  document.getElementById('vp').textContent = p;
+  document.getElementById('vh').textContent = h;
+  document.getElementById('vc').textContent = fmt(c);
+  document.getElementById('vi').textContent = fmtM(inv);
+
+  const horas_anuales = p * h * 48; // 48 semanas hábiles
+  const ahorro_anual = horas_anuales * c;
+  const roi_x = ahorro_anual / inv;
+  const payback_meses = (inv / ahorro_anual) * 12;
+  const fte_eq = horas_anuales / (40*48);
+
+  document.getElementById('roi-anual').textContent = fmtM(ahorro_anual);
+  document.getElementById('roi-horas').textContent = horas_anuales.toLocaleString('es-CO') + ' h';
+  document.getElementById('roi-x').textContent = roi_x.toFixed(1) + '×';
+  document.getElementById('roi-payback').textContent = payback_meses < 1 ? '< 1 mes' : payback_meses.toFixed(1) + ' meses';
+  document.getElementById('roi-fte').textContent = fte_eq.toFixed(1);
+}
+['r-personas','r-horas','r-costo','r-inv'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateROI);
+});
+updateROI();
+
+// ====== Gantt ======
+const semanas = Array.from({length:10}, (_,i)=>'Semana '+(i+1));
+const ganttCtx = document.getElementById('gantt').getContext('2d');
+new Chart(ganttCtx, {
+  type:'bar',
+  data:{
+    labels: semanas,
+    datasets:[
+      {label:'Ciclo 1 · Diagnóstico', data:[1,1,0,0,0,0,0,0,0,0], backgroundColor:'#00d4ff'},
+      {label:'Ciclo 2 · Agentes', data:[0,0,1,1,0,0,0,0,0,0], backgroundColor:'#7b2fff'},
+      {label:'Ciclo 3 · Apps', data:[0,0,0,0,1,1,0,0,0,0], backgroundColor:'#ff2e9a'},
+      {label:'Ciclo 4 · Automatizaciones', data:[0,0,0,0,0,0,1,1,0,0], backgroundColor:'#ff8c00'},
+      {label:'Ciclo 5 · Integración + Demo Day', data:[0,0,0,0,0,0,0,0,1,1], backgroundColor:'#00ffa3'}
+    ]
+  },
+  options:{
+    responsive:true,
+    plugins:{ legend:{ labels:{color:'#a8c5e6', font:{family:'Inter'}}}},
+    scales:{
+      x:{ stacked:true, ticks:{color:'#a8c5e6'}, grid:{color:'rgba(0,212,255,0.08)'}},
+      y:{ stacked:true, ticks:{color:'#a8c5e6', stepSize:1, callback:()=>''}, grid:{display:false}}
+    }
+  }
+});
+</script>
+</body>
+</html>
